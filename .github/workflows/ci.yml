@@ -33,8 +33,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          npm-version: 11.16.0
           registry-url: https://registry.npmjs.org
+      - name: Install npm with the stage command
+        run: |
+          npm install -g npm@11.16.0
+          npm --version
+          npm stage --help | head -3
       - name: Stage for publishing
         run: npm stage publish .
         env:
