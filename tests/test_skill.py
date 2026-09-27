@@ -115,14 +115,17 @@ for path in ["jobs/scan-codebase.md", "jobs/scan-changes.md"]:
 
 # --- 4. Manifest smoke test -----------------------------------------------
 
+import json
+
+expected_version = json.loads(read_text(ROOT / "package.json"))["version"]
 smoke = (
     "import sys; sys.path.insert(0, %r); "
     "from lib import plugin; v = plugin.version(); "
-    "assert v == '0.11.0', v" % str(ROOT / "scripts")
+    "assert v == %r, v" % (str(ROOT / "scripts"), expected_version)
 )
 proc = subprocess.run([sys.executable, "-c", smoke],
                      stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-check("manifest: plugin.version() == '0.11.0'", proc.returncode == 0,
+check("manifest: plugin.version() == %r" % expected_version, proc.returncode == 0,
       proc.stderr.decode("utf-8", "replace").strip() or
       "exit code %d" % proc.returncode)
 
