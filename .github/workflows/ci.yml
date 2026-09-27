@@ -33,8 +33,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          npm-version: 11.16.0
           registry-url: https://registry.npmjs.org
-      - name: npm publish
-        run: npm publish
+      - name: Stage for publishing
+        run: npm stage publish .
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
