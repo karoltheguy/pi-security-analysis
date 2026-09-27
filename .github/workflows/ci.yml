@@ -41,5 +41,3 @@ jobs:
           npm stage --help | head -3
       - name: Stage for publishing
         run: npm stage publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
