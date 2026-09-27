@@ -1,0 +1,10 @@
+# dev-only
+tests/
+workflows/
+.fablecodex/
+.kilo/
+.github/
+harness/node_modules/
+harness/package-lock.json
+scripts/lib/__pycache__/
+.gitattributes
