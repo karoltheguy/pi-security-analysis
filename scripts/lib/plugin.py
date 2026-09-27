@@ -9,7 +9,7 @@ from . import strictjson
 from .strictjson import is_map, is_str
 
 NAME = "pi-security-analysis"
-# The skill root (two levels up from this file; the manifest lives at <root>/.pi-plugin/plugin.json)
+# The skill root (two levels up from this file; the manifest is the root package.json)
 ROOT = Path(__file__).resolve().parents[2]
 RUN_DIR_NAME = ".pi-security-analysis-run"
 TARGET_FILES_NAME = "target-files.json"
@@ -22,9 +22,9 @@ SHA_RE = re.compile(r"^[0-9a-fA-F]{7,64}\Z")
 
 
 def version() -> str | None:
-    """The non-blank version string in the plugin's manifest, or None when there is not one."""
+    """The non-blank version string in the root package.json manifest, or None when there is not one."""
     try:
-        manifest = strictjson.load(ROOT / ".pi-plugin" / "plugin.json")
+        manifest = strictjson.load(ROOT / "package.json")
     except (OSError, ValueError):
         return None
     if not is_map(manifest):

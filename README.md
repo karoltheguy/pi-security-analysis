@@ -16,7 +16,7 @@ Pi discovers the skill from a skill directory, a `--skill` flag, or a package:
 
 - **Skill directory** — copy the repository into `~/.pi/agent/skills/pi-security-analysis/` (a project `.pi/skills/` or `~/.agents/skills/` location works too).
 - **`--skill`** — start Pi with `--skill <path-to-the-skill-directory>`.
-- **Package** — a `package.json` with a `pi.skills` entry pointing at the skill directory (and `pi-subagents.agents` for the named agents); install by cloning or copying it into a skill location.
+- **Package** — the repository is a pi package: a root `package.json` whose `pi` manifest exposes the skill (the repository root) and the `extensions/pi-security-analysis.mjs` metrics extension, and whose `pi-subagents.agents` entry exposes the named agents. Install it with `pi install <path-or-git-url>`. The named agents and the scan workflow also need pi-subagents installed.
 
 With skill commands enabled, the skill registers as `/skill:pi-security-analysis`.
 

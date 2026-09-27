@@ -50,8 +50,8 @@ check(
     "found %d: %s" % (len(agent_mds), ", ".join(agent_mds)),
 )
 check("tree: workflows/scan.js exists", exists("workflows/scan.js"))
-check("tree: .pi-plugin/plugin.json exists", exists(".pi-plugin/plugin.json"))
-check("tree: extension/ exists", (ROOT / "extension").is_dir())
+check("tree: package.json exists", exists("package.json"))
+check("tree: extensions/ exists", (ROOT / "extensions").is_dir())
 
 # --- 2. SKILL.md frontmatter ----------------------------------------------
 

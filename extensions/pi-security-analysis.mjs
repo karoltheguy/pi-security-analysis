@@ -16,7 +16,7 @@ function manifestVersion() {
   // The version in the repo's manifest; "" when there is not one.
   try {
     const manifest = JSON.parse(
-      readFileSync(new URL("../.pi-plugin/plugin.json", import.meta.url), "utf8"),
+      readFileSync(new URL("../package.json", import.meta.url), "utf8"),
     );
     return typeof manifest.version === "string" ? manifest.version : "";
   } catch {

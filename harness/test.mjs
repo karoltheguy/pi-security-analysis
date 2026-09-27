@@ -19,7 +19,7 @@ try {
   const { extensions, errors } = loader.getExtensions();
   const extPaths = extensions.map((e) => e.resolvedPath);
   assert.ok(
-    extPaths.some((p) => p.endsWith("extension/pi-security-analysis.mjs")),
+    extPaths.some((p) => p.endsWith("extensions/pi-security-analysis.mjs")),
     `metrics extension not loaded; got: [${extPaths.join(", ")}]`,
   );
   assert.ok(

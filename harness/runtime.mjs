@@ -14,7 +14,7 @@ import { fileURLToPath } from "node:url";
 
 const require = createRequire(import.meta.url);
 const repoRoot = fileURLToPath(new URL("..", import.meta.url));
-const metricsExtension = `${repoRoot}/extension/pi-security-analysis.mjs`;
+const metricsExtension = `${repoRoot}/extensions/pi-security-analysis.mjs`;
 const piSubagentsExtension = require.resolve("pi-subagents");
 
 /**

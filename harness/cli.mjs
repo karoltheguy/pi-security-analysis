@@ -26,7 +26,7 @@ try {
 
   const checks = [
     ["skill pi-security-analysis loaded", skillNames.includes("pi-security-analysis")],
-    ["metrics extension loaded", extPaths.some((p) => p.endsWith("extension/pi-security-analysis.mjs"))],
+    ["metrics extension loaded", extPaths.some((p) => p.endsWith("extensions/pi-security-analysis.mjs"))],
     ["pi-subagents extension loaded", extPaths.some((p) => p.includes("pi-subagents") && p.endsWith("index.js"))],
     ["no extension load errors", errors.length === 0],
   ];

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""Extension check: extension/pi-security-analysis.mjs.
+"""Extension check: extensions/pi-security-analysis.mjs.
 
-Asserts that the repo root contains extension/pi-security-analysis.mjs,
+Asserts that the repo root contains extensions/pi-security-analysis.mjs,
 that it imports as an ES module whose default export accepts a minimal
 ExtensionAPI mock ({registerTool(def), on(event, handler)}), that
 it registers a tool named "ask_user", and that its python-3.9 preflight
@@ -36,7 +36,7 @@ import { pathToFileURL } from "node:url";
 import fs from "node:fs";
 
 const root = process.env.PI_ROOT;
-const extPath = root + "/extension/pi-security-analysis.mjs";
+const extPath = root + "/extensions/pi-security-analysis.mjs";
 const result = {
   exists: fs.existsSync(extPath),
   importError: null,
@@ -107,9 +107,9 @@ def check(name, ok, detail=""):
 
 
 def main():
-    ext = ROOT / "extension" / "pi-security-analysis.mjs"
+    ext = ROOT / "extensions" / "pi-security-analysis.mjs"
     check("extension_file_exists", ext.exists(),
-          "extension/pi-security-analysis.mjs not found at %s" % ext)
+          "extensions/pi-security-analysis.mjs not found at %s" % ext)
 
     result = None
     with tempfile.TemporaryDirectory(prefix="ext_port_") as tmp:

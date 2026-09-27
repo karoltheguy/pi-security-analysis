@@ -7,6 +7,7 @@
   },
   "license": "SEE LICENSE IN LICENSE",
   "keywords": [
+    "pi-package",
     "security",
     "vulnerability",
     "scan",
@@ -15,5 +16,12 @@
     "code-review",
     "remediation",
     "autofix"
-  ]
+  ],
+  "pi": {
+    "skills": ["."],
+    "extensions": ["./extensions/pi-security-analysis.mjs"]
+  },
+  "pi-subagents": {
+    "agents": ["./agents"]
+  }
 }
