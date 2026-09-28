@@ -451,9 +451,15 @@ export default function (pi) {
     },
   });
 
-  pi.on("session_start", async () => {
-    process.stdout.write(banner() + "\n");
+  pi.on("session_start", async (_event, ctx) => {
     const warning = await pythonPreflight();
+    if (ctx.mode === "tui") {
+      // Never write raw stdout in the TUI: it lands in the middle of the
+      // rendered screen and moves the input cursor. Show only the warning.
+      if (warning) ctx.ui.notify(warning.trim(), "warning");
+      return;
+    }
+    process.stdout.write(banner() + "\n");
     if (warning) process.stdout.write(warning);
   });
 

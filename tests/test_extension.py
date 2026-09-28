@@ -3,11 +3,17 @@
 
 Asserts that the repo root contains extensions/pi-security-analysis.mjs,
 that it imports as an ES module whose default export accepts a minimal
-ExtensionAPI mock ({registerTool(def), on(event, handler)}), that
-it registers a tool named "ask_user", and that its python-3.9 preflight
-yields a warning containing "python3 3.9 or newer" when the environment
-reports an older python3 (mocked here with a fake `python3` on PATH
-that prints "Python 3.8.10").
+ExtensionAPI mock ({registerTool(def), on(event, handler)}), and that
+it registers a tool named "ask_user".
+
+The session_start handler is invoked twice with a ctx mock: once in TUI
+mode (ctx = {mode: "tui", ui: {notify}}) and once in print mode
+(ctx = {mode: "print"}). The TUI run must write nothing to stdout (no
+"Launching Pi Security" banner) and deliver the python-3.9 preflight
+warning via ctx.ui.notify; the print run must write the banner and the
+warning to stdout. The preflight warning (containing "python3 3.9 or
+newer") is produced by a fake `python3` on PATH that prints
+"Python 3.8.10".
 
 Stdlib-only, Python 3.9 compatible.
 
@@ -28,9 +34,12 @@ FAILURES = []
 
 # Node harness: imports the extension with a mock ExtensionAPI (no real
 # pi runtime needed), records registerTool calls and event handlers,
-# triggers the handlers to reach the banner/preflight path, and prints
-# one JSON object to stdout. Exits 0 even when checks fail — the
-# Python test parses the JSON and decides pass/fail.
+# invokes the session_start handler twice — once with a TUI ctx mock
+# (capturing stdout and ctx.ui.notify calls) and once with a print ctx
+# mock (capturing stdout) — and prints one JSON object to stdout:
+# { tools, tui: { stdout, notified }, print: { stdout } }. Exits 0 even
+# when checks fail — the Python test parses the JSON and decides
+# pass/fail.
 NODE_SCRIPT = r"""
 import { pathToFileURL } from "node:url";
 import fs from "node:fs";
@@ -41,13 +50,13 @@ const result = {
   exists: fs.existsSync(extPath),
   importError: null,
   tools: [],
-  banner: null,
+  tui: { stdout: "", notified: [] },
+  print: { stdout: "" },
 };
 
 if (result.exists) {
   const registered = [];
   const handlers = {};
-  const captured = [];
   const api = {
     registerTool: (def) => { registered.push(def.name); },
     on: (event, handler) => {
@@ -55,9 +64,25 @@ if (result.exists) {
     },
   };
   const origWrite = process.stdout.write.bind(process.stdout);
-  process.stdout.write = (chunk, enc, cb) => {
-    captured.push(String(chunk));
-    if (cb) cb();
+  // Run the session_start handlers with a ctx mock, capturing every
+  // stdout write (and, for the TUI mock, every ctx.ui.notify call).
+  const runSessionStart = async (ctx) => {
+    const captured = [];
+    process.stdout.write = (chunk, enc, cb) => {
+      captured.push(String(chunk));
+      if (cb) cb();
+    };
+    for (const h of handlers.session_start || []) {
+      try {
+        await h({}, ctx);
+      } catch (e) {
+        captured.push(String(e));
+      }
+    }
+    // Allow async banner/preflight emission before stopping capture.
+    await new Promise((r) => setTimeout(r, 200));
+    process.stdout.write = origWrite;
+    return captured.join("");
   };
   try {
     const mod = await import(pathToFileURL(extPath).href);
@@ -72,26 +97,30 @@ if (result.exists) {
         }
       }
     }
-    // Trigger registered event handlers to reach the banner/preflight path.
-    for (const list of Object.values(handlers)) {
+    // TUI run: no stdout banner; the preflight warning arrives via notify.
+    result.tui.stdout = await runSessionStart({
+      mode: "tui",
+      ui: { notify: (msg) => { result.tui.notified.push(String(msg)); } },
+    });
+    // Print run: banner and warning on stdout.
+    result.print.stdout = await runSessionStart({ mode: "print" });
+    // Other handlers (e.g. tool_result) keep the old {} invocation.
+    for (const [event, list] of Object.entries(handlers)) {
+      if (event === "session_start") continue;
       for (const h of list) {
         try {
-          const r = await h({});
-          if (typeof r === "string") captured.push(r);
+          await h({});
         } catch (e) {
-          captured.push(String(e));
+          // Ignore: only the session_start runs are asserted on.
         }
       }
     }
-    // Allow async banner emission before stopping capture.
-    await new Promise((r) => setTimeout(r, 200));
   } catch (e) {
     result.importError = String(e);
   } finally {
     process.stdout.write = origWrite;
   }
   result.tools = registered;
-  result.banner = captured.join("");
 }
 
 console.log(JSON.stringify(result));
@@ -140,9 +169,21 @@ def main():
         check("registers_ask_user_tool",
               "ask_user" in result.get("tools", []),
               "registered tools: %s" % result.get("tools"))
-        check("banner_warns_python_3_9",
-              "python3 3.9 or newer" in (result.get("banner") or ""),
-              "banner: %r" % result.get("banner"))
+        tui = result.get("tui") or {}
+        print_run = result.get("print") or {}
+        tui_stdout = tui.get("stdout") or ""
+        tui_notified = tui.get("notified") or []
+        print_stdout = print_run.get("stdout") or ""
+        check("tui_no_stdout_banner",
+              "Launching Pi Security" not in tui_stdout,
+              "tui stdout: %r" % tui_stdout)
+        check("tui_warning_via_notify",
+              any("python3 3.9 or newer" in msg for msg in tui_notified),
+              "notified: %r" % tui_notified)
+        check("print_banner_on_stdout",
+              "Launching Pi Security" in print_stdout
+              and "python3 3.9 or newer" in print_stdout,
+              "print stdout: %r" % print_stdout)
 
     if FAILURES:
         print("%d check(s) failed: %s" % (len(FAILURES), ", ".join(FAILURES)))
