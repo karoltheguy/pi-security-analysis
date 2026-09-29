@@ -406,7 +406,7 @@ def next_step(run_dir: Path, meta: JsonMap, chain: Chain) -> str:
     return (
         "next: make this Workflow call exactly as printed, wait for it with keep-waiting.sh "
         "as before, then run save_result.py on its output file\n"
-        f'Workflow({{ name: "pi-security-analysis:scan", args: {strictjson.text(args)} }})'
+        f'Workflow({{ name: "pi-security-analysis.scan", args: {strictjson.text(args)} }})'
     )
 
 

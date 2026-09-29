@@ -11,6 +11,7 @@ import { appendFileSync, mkdirSync, readFileSync, readdirSync, realpathSync } fr
 import { homedir } from "node:os";
 import { basename, dirname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { registerWorkflowResource } from "pi-subagents/workflow-resources";
 
 function manifestVersion() {
   // The version in the repo's manifest; "" when there is not one.
@@ -108,6 +109,7 @@ const COLLAPSED = new Set(["small-diff", "small-scope"]);
 const STAMP_PREFIX = "PI-SECURITY-REVISION-";
 const OPERATORS = new Set("();<>|&".split(""));
 const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
+let scanRegistration;
 const SCRIPTS = join(REPO_ROOT, "scripts");
 
 // The local, append-only metrics file (opt-in via PI_SECURITY_METRICS=1).
@@ -452,6 +454,28 @@ export default function (pi) {
   });
 
   pi.on("session_start", async (_event, ctx) => {
+    // Register the scan workflow. The script is read once here and captured
+    // in the closure; resolve() is synchronous and does no I/O. Re-running
+    // session_start (resume/fork/reload) disposes the prior registration
+    // first, so nothing is silently overwritten.
+    let script;
+    try {
+      script = readFileSync(new URL("../workflows/scan.js", import.meta.url), "utf8");
+    } catch {
+      script = null;
+    }
+    scanRegistration?.dispose();
+    scanRegistration = registerWorkflowResource({
+      sessionId: ctx.sessionManager.getSessionId(),
+      definition: {
+        name: "pi-security-analysis.scan",
+        version: 1,
+        resolve: () =>
+          script === null
+            ? { error: "workflows/scan.js is not available in this installation" }
+            : { script },
+      },
+    });
     const warning = await pythonPreflight();
     if (ctx.mode === "tui") {
       // Never write raw stdout in the TUI: it lands in the middle of the
@@ -465,5 +489,10 @@ export default function (pi) {
 
   pi.on("tool_result", (event) => {
     metricsEvent(event);
+  });
+
+  pi.on("session_shutdown", () => {
+    scanRegistration?.dispose();
+    scanRegistration = undefined;
   });
 }
