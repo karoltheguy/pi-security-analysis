@@ -98,12 +98,16 @@ if (result.exists) {
       }
     }
     // TUI run: no stdout banner; the preflight warning arrives via notify.
+    const ctxBase = {
+      sessionManager: { getSessionId: () => "test-session" },
+    };
     result.tui.stdout = await runSessionStart({
+      ...ctxBase,
       mode: "tui",
       ui: { notify: (msg) => { result.tui.notified.push(String(msg)); } },
     });
     // Print run: banner and warning on stdout.
-    result.print.stdout = await runSessionStart({ mode: "print" });
+    result.print.stdout = await runSessionStart({ ...ctxBase, mode: "print" });
     // Other handlers (e.g. tool_result) keep the old {} invocation.
     for (const [event, list] of Object.entries(handlers)) {
       if (event === "session_start") continue;
