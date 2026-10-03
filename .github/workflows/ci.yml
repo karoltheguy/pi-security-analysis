@@ -80,7 +80,17 @@ jobs:
           curl -sS "https://npm.pkg.github.com/pi-security-analysis" \
             -H "Authorization: Bearer $NODE_AUTH_TOKEN" \
             -w '\nGET pi-security-analysis status: %{http_code}\n'
-          # 2. Can this token publish a fresh, unique package name at all?
+          # 2. Is the token even authenticated to the registry?
+          curl -sS "https://npm.pkg.github.com/-/whoami" \
+            -H "Authorization: Bearer $NODE_AUTH_TOKEN" \
+            -w '\nWHOAMI status: %{http_code}\n'
+          # 3. Raw PUT with an empty body to capture the registry response body
+          curl -sS -X PUT "https://npm.pkg.github.com/probe-raw-$(date +%s)" \
+            -H "Authorization: Bearer $NODE_AUTH_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            -w '\nRAW PUT status: %{http_code}\n'
+          # 4. Can this token publish a fresh, unique package name at all?
           mkdir -p /tmp/probe && cd /tmp/probe
           NAME="pi-sec-analysis-probe-$(date +%s)"
           printf '{"name":"%s","version":"0.0.1","description":"ci probe","main":"index.js"}' "$NAME" > package.json
