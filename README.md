@@ -18,6 +18,8 @@ Pi discovers the skill from a skill directory, a `--skill` flag, or a package:
 - **`--skill`** — start Pi with `--skill <path-to-the-skill-directory>`.
 - **Package** — the repository is a pi package: a root `package.json` whose `pi` manifest exposes the skill (the repository root) and the `extensions/pi-security-analysis.mjs` metrics extension, and whose `pi-subagents.agents` entry exposes the named agents. Install it with `pi install <path-or-git-url>`. The named agents and the scan workflow also need pi-subagents installed.
 
+The package is also published to the npm registry (`pi-security-analysis` on [npmjs](https://www.npmjs.com/package/pi-security-analysis)) and to [GitHub Packages](https://github.com/karoltheguy/pi-security-analysis/pkgs/npm/pi-security-analysis) on each `v*` tag, for discoverability.
+
 With skill commands enabled, the skill registers as `/skill:pi-security-analysis`.
 
 
