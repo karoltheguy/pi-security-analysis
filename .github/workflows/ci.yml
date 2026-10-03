@@ -83,9 +83,7 @@ jobs:
           # 2. Can this token publish a fresh, unique package name at all?
           mkdir -p /tmp/probe && cd /tmp/probe
           NAME="pi-sec-analysis-probe-$(date +%s)"
-          cat > package.json <<EOF
-{"name":"${NAME}","version":"0.0.1","description":"ci probe","main":"index.js"}
-EOF
+          printf '{"name":"%s","version":"0.0.1","description":"ci probe","main":"index.js"}' "$NAME" > package.json
           echo 'module.exports = 1;' > index.js
           npm config set registry https://npm.pkg.github.com
           npm publish || echo "probe publish FAILED (exit $?)"
