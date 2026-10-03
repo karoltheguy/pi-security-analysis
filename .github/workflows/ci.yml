@@ -82,10 +82,10 @@ jobs:
             -w '\nGET pi-security-analysis status: %{http_code}\n'
           # 2. Can this token publish a fresh, unique package name at all?
           mkdir -p /tmp/probe && cd /tmp/probe
-          echo '{"name":"pi-sec-analysis-probe-"'"$(date +%s)"'","version":"0.0.1","description":"ci probe","main":"index.js"}' > package.json
+          NAME="pi-sec-analysis-probe-$(date +%s)"
+          printf '{"name":"%s","version":"0.0.1","description":"ci probe","main":"index.js"}' "$NAME" > package.json
           echo 'module.exports = 1;' > index.js
           npm config set registry https://npm.pkg.github.com
-          npm publish
-          echo "probe publish exit: $?"
+          npm publish || echo "probe publish FAILED (exit $?)"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
