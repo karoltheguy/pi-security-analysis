@@ -72,3 +72,14 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Dump npm debug log on failure
+        if: failure()
+        run: |
+          set -x
+          ls -la ~/.npm/_logs/ || true
+          for f in ~/.npm/_logs/*debug-0.log; do
+            [ -e "$f" ] || continue
+            # Print the tail of the newest debug log, including any HTTP
+            # response bodies from the registry (the 404 reason).
+            tail -n 120 "$f"
+          done
