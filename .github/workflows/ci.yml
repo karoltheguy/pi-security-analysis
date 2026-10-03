@@ -64,6 +64,11 @@ jobs:
           node-version: 22
           registry-url: https://npm.pkg.github.com
       - name: Publish to GitHub Packages
-        run: npm publish
+        run: |
+          # setup-node's registry-url only maps the registry to the owner's
+          # scope (@owner:registry=...), but this package is unscoped, so set
+          # the global registry explicitly or npm publish falls back to npmjs.
+          npm config set registry https://npm.pkg.github.com
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
