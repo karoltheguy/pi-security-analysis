@@ -72,14 +72,20 @@ jobs:
           npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Dump npm debug log on failure
+      - name: Diagnose GitHub Packages 404
         if: failure()
         run: |
           set -x
-          ls -la ~/.npm/_logs/ || true
-          for f in ~/.npm/_logs/*debug-0.log; do
-            [ -e "$f" ] || continue
-            # Print the tail of the newest debug log, including any HTTP
-            # response bodies from the registry (the 404 reason).
-            tail -n 120 "$f"
-          done
+          # 1. Does the package name exist / is it reachable with the token?
+          curl -sS "https://npm.pkg.github.com/pi-security-analysis" \
+            -H "Authorization: Bearer $NODE_AUTH_TOKEN" \
+            -w '\nGET pi-security-analysis status: %{http_code}\n'
+          # 2. Can this token publish a fresh, unique package name at all?
+          mkdir -p /tmp/probe && cd /tmp/probe
+          echo '{"name":"pi-sec-analysis-probe-"'"$(date +%s)"'","version":"0.0.1","description":"ci probe","main":"index.js"}' > package.json
+          echo 'module.exports = 1;' > index.js
+          npm config set registry https://npm.pkg.github.com
+          npm publish
+          echo "probe publish exit: $?"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
