@@ -1,6 +1,5 @@
 # dev-only
 tests/
-workflows/
 .fablecodex/
 .kilo/
 .github/
