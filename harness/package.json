@@ -6,6 +6,6 @@
   "description": "Harness that boots a Pi SDK session loading the pi-security-analysis skill, the pi-subagents extension, and the metrics extension.",
   "dependencies": {
     "@earendil-works/pi-coding-agent": "0.87.1",
-    "pi-subagents": "0.71.0"
+    "pi-subagents": "0.75.0"
   }
 }
