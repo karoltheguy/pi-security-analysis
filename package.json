@@ -29,7 +29,7 @@
     "agents": ["./agents"]
   },
   "dependencies": {
-    "pi-subagents": "0.71.0"
+    "pi-subagents": "0.75.0"
   },
   "peerDependencies": {
     "@earendil-works/pi-coding-agent": "*"
