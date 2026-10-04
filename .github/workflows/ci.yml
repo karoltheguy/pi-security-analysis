@@ -49,57 +49,13 @@ jobs:
           npm --version
           npm stage --help | head -3
       - name: Stage for publishing
-        run: npm stage publish
-
-  publish-github-packages:
-    needs: test
-    if: startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
-    permissions:
-      packages: write
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          registry-url: https://npm.pkg.github.com
-      - name: Publish to GitHub Packages
         run: |
-          # setup-node's registry-url only maps the registry to the owner's
-          # scope (@owner:registry=...), but this package is unscoped, so set
-          # the global registry explicitly or npm publish falls back to npmjs.
-          npm config set registry https://npm.pkg.github.com
-          npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Diagnose GitHub Packages 404
-        if: failure()
-        run: |
-          set -x
-          # 1. Does the package name exist / is it reachable with the token?
-          curl -sS "https://npm.pkg.github.com/pi-security-analysis" \
-            -H "Authorization: Bearer $NODE_AUTH_TOKEN" \
-            -w '\nGET pi-security-analysis status: %{http_code}\n'
-          # 2. Is the token even authenticated to the registry?
-          curl -sS "https://npm.pkg.github.com/-/whoami" \
-            -H "Authorization: Bearer $NODE_AUTH_TOKEN" \
-            -w '\nWHOAMI status: %{http_code}\n'
-          # 3. Raw PUT with an empty body to capture the registry response body
-          curl -sS -X PUT "https://npm.pkg.github.com/probe-raw-$(date +%s)" \
-            -H "Authorization: Bearer $NODE_AUTH_TOKEN" \
-            -H "Content-Type: application/json" \
-            -d '{}' \
-            -w '\nRAW PUT status: %{http_code}\n'
-          # 4. Can this token publish a fresh, unique SCOPED package name?
-          mkdir -p /tmp/probe && cd /tmp/probe
-          NAME="@karoltheguy/pi-sec-analysis-probe-$(date +%s)"
-          printf '{"name":"%s","version":"0.0.1","description":"ci probe","main":"index.js"}' "$NAME" > package.json
-          echo 'module.exports = 1;' > index.js
-          npm config set registry https://npm.pkg.github.com
-          npm publish > /tmp/probe.log 2>&1
-          echo "probe exit: $?"
-          echo "=== PROBE LOG START ==="
-          cat /tmp/probe.log
-          echo "=== PROBE LOG END ==="
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Skip staging if this version is already published, so re-running
+          # a tag does not fail with E409 ("Cannot stage previously
+          # published version").
+          VERSION="$(node -p "require('./package.json').version")"
+          if npm view "pi-security-analysis@${VERSION}" version >/dev/null 2>&1; then
+            echo "pi-security-analysis@${VERSION} is already published to npm; skipping stage."
+          else
+            npm stage publish
+          fi
