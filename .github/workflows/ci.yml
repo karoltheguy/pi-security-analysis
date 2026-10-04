@@ -96,6 +96,10 @@ jobs:
           printf '{"name":"%s","version":"0.0.1","description":"ci probe","main":"index.js"}' "$NAME" > package.json
           echo 'module.exports = 1;' > index.js
           npm config set registry https://npm.pkg.github.com
-          npm publish || echo "probe publish FAILED (exit $?)"
+          npm publish > /tmp/probe.log 2>&1
+          echo "probe exit: $?"
+          echo "=== PROBE LOG START ==="
+          cat /tmp/probe.log
+          echo "=== PROBE LOG END ==="
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
