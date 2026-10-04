@@ -90,9 +90,9 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{}' \
             -w '\nRAW PUT status: %{http_code}\n'
-          # 4. Can this token publish a fresh, unique package name at all?
+          # 4. Can this token publish a fresh, unique SCOPED package name?
           mkdir -p /tmp/probe && cd /tmp/probe
-          NAME="pi-sec-analysis-probe-$(date +%s)"
+          NAME="@karoltheguy/pi-sec-analysis-probe-$(date +%s)"
           printf '{"name":"%s","version":"0.0.1","description":"ci probe","main":"index.js"}' "$NAME" > package.json
           echo 'module.exports = 1;' > index.js
           npm config set registry https://npm.pkg.github.com
