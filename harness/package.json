@@ -5,8 +5,8 @@
   "type": "module",
   "description": "Harness that boots a Pi SDK session loading the pi-security-analysis skill, the pi-subagents extension, and the metrics extension.",
   "dependencies": {
-    "@earendil-works/pi-coding-agent": "0.87.1",
-    "pi-subagents": "0.75.0"
+    "@earendil-works/pi-coding-agent": "1.5.0",
+    "pi-subagents": "0.84.0"
   },
   "scripts": {
     "postinstall": "node ../scripts/fix-brace-expansion.mjs ."
